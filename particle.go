@@ -13,14 +13,15 @@ type particle struct {
 	msat   float64 // Saturation magnetisation in A/m
 
 	//variables related to the energy landscape
-	min1  float64 // position of first minimum
-	m1    float64 // percentage of partices in first minimum
-	E1    float64 // energy of first minimum
-	min2  float64 // position of second minimum
-	m2    float64 // percentage of particles in second minimum
-	E2    float64 // energy of second minimum
-	Ebar1 float64 // energy barrier to jump from E1 to E2
-	Ebar2 float64 // energy barrier to jump from E2 to E1
+	min1   float64 // position of first minimum
+	m1     float64 // percentage of partices in first minimum
+	E1     float64 // energy of first minimum
+	min2   float64 // position of second minimum
+	m2     float64 // percentage of particles in second minimum
+	E2     float64 // energy of second minimum
+	Ebar1  float64 // energy barrier to jump from E1 to E2
+	Ebar2  float64 // energy barrier to jump from E2 to E1
+	onemin bool    // boolean that states if there is one or 2 minima in the energy landscape
 
 }
 
@@ -83,6 +84,7 @@ func (p particle) Update_maximum() {
 	if p.min1-p.min2 < 0.001 {
 		p.Ebar1 = 0.
 		p.Ebar2 = 0.
+		p.onemin = true
 		return
 	}
 	theta := p.min1
@@ -94,6 +96,7 @@ func (p particle) Update_maximum() {
 	}
 	p.Ebar1 = ref - p.E1
 	p.Ebar2 = ref - p.E2
+	p.onemin = false
 	return
 }
 
@@ -102,13 +105,37 @@ func (p particle) M() float64 {
 	return p.mz
 }
 
-//TODO
 //performs one timestep with stepsize Dt, using euler forward method
 func (p particle) step() {
-	//update m1
+	if p.onemin {
+		if p.m1 < math.Pi/2. {
+			p.m1 = 1.
+			p.m2 = 0.
+			p.mz = p.min1
+		} else {
+			p.m1 = 0.
+			p.m2 = 1.
+			p.mz = p.min2
+		}
+		return
+	}
 
-	//update m2
+	//update m1 and m2
+	if p.onemin == false {
+		onetotwo := tau0 * math.Exp(p.Ebar1/kb/Temp)
+		twotoone := tau0 * math.Exp(p.Ebar2/kb/Temp)
+		p.m1 += Dt * (twotoone - onetotwo)
+		p.m2 += Dt * (onetotwo - twotoone)
+
+	}
+	//norm in between
+	if p.m1+p.m2 != 1. {
+		p.m1 = p.m1 / (p.m1 + p.m2)
+		p.m2 = p.m2 / (p.m1 + p.m2)
+	}
+
 	//update M
+	p.mz = p.m1*p.min1 + p.m2*p.min2
 }
 
 // makes a new particle, given its anisotropy angle/constant,radius and msat
