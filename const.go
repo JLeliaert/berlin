@@ -13,6 +13,7 @@ const (
 	muB    = 9.2740091523E-24   // Bohr magneton in J/T
 	kb     = 1.3806488E-23      // Boltzmann's constant in J/K
 	qe     = 1.60217646E-19     // Electron charge in C
+	tau0   = 1e-10              // tau0 in seconds
 )
 
 func init() {

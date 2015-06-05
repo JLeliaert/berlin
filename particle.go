@@ -8,7 +8,7 @@ import (
 type particle struct {
 	mz     float64 // magnetisation along the z-direction
 	u_anis float64 // Uniaxial anisotropy axis (angle)
-	Ku1    float64 // Uniaxial anisotropy constant in J/m**3
+	ku1    float64 // Uniaxial anisotropy constant in J/m**3
 	r      float64 // radius
 	msat   float64 // Saturation magnetisation in A/m
 
@@ -30,7 +30,7 @@ func (p particle) V() float64 {
 
 // returns the energy due to the anisotropy of the particle as function of theta
 func (p particle) E_anis(theta float64) float64 {
-	return -p.Ku1 * p.V() * (math.Sin(theta)*math.Sin(p.u_anis) + math.Cos(theta)*math.Cos(p.u_anis)) * (math.Sin(theta)*math.Sin(p.u_anis) + math.Cos(theta)*math.Cos(p.u_anis))
+	return -p.ku1 * p.V() * (math.Sin(theta)*math.Sin(p.u_anis) + math.Cos(theta)*math.Cos(p.u_anis)) * (math.Sin(theta)*math.Sin(p.u_anis) + math.Cos(theta)*math.Cos(p.u_anis))
 }
 
 // returns the energy due to the external field as function of theta
@@ -100,4 +100,23 @@ func (p particle) Update_maximum() {
 // returns the z-component of the particle magnetisation
 func (p particle) M() float64 {
 	return p.mz
+}
+
+//TODO
+//performs one timestep with stepsize Dt, using euler forward method
+func (p particle) step() {
+	//update m1
+
+	//update m2
+	//update M
+}
+
+// makes a new particle, given its anisotropy angle/constant,radius and msat
+func NewParticle(radius float64, Msat float64, U_anis float64, Ku1 float64) *particle {
+	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis}
+}
+
+// Add a particle to the Particles list
+func AddParticle(p *particle) {
+	Particles = append(Particles, p)
 }
