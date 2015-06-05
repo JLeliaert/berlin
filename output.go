@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-
 var (
-	outputFile     *os.File
-	err            error
+	outputFile *os.File
+	err        error
+	outdir     string
 )
 
 //Initialise the outputdir
@@ -40,4 +40,11 @@ func initOutput() {
 	outputFile, err = os.Create(outdir + "/table.txt")
 	check(err)
 
+}
+
+//checks the error
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
