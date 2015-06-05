@@ -25,39 +25,41 @@ type particle struct {
 
 }
 
-func (p particle) V() float64 {
+func (p *particle) V() float64 {
 	return 4 / 3 * math.Pi * p.r * p.r * p.r
 }
 
 // returns the energy due to the anisotropy of the particle as function of theta
-func (p particle) E_anis(theta float64) float64 {
+func (p *particle) E_anis(theta float64) float64 {
 	return -p.ku1 * p.V() * (math.Sin(theta)*math.Sin(p.u_anis) + math.Cos(theta)*math.Cos(p.u_anis)) * (math.Sin(theta)*math.Sin(p.u_anis) + math.Cos(theta)*math.Cos(p.u_anis))
 }
 
 // returns the energy due to the external field as function of theta
-func (p particle) E_ext(theta float64) float64 {
+func (p *particle) E_ext(theta float64) float64 {
 	return -p.msat * p.V() * B_ext(T) * math.Cos(theta)
 }
 
 // returns the entropy times temperature as function of theta
-func (p particle) TS(theta float64) float64 {
+func (p *particle) TS(theta float64) float64 {
+	if (T==0.){return 0.}
+	if (theta==0.){return 10000.}
 	return Temp * kb * math.Log(1/2.*math.Sin(theta)*math.Sin(theta))
 }
 
 // returns the total free energy as function of theta
-func (p particle) F(theta float64) float64 {
+func (p *particle) F(theta float64) float64 {
 	return p.E_anis(theta) + p.E_ext(theta) - p.TS(theta)
 }
 
 // looks for the position and energies of the minima in the free energy, angle accuracy is 0.001 rad
-func (p particle) Update_minima() {
+func (p *particle) Update_minima() {
 	//find first minimum
 	theta := 0.
 	dt := 0.001
 	ref := p.F(theta)
 	theta += dt
 
-	for p.F(theta) > ref {
+	for p.F(theta) < ref {
 		ref = p.F(theta)
 
 		theta += dt
@@ -71,7 +73,7 @@ func (p particle) Update_minima() {
 	ref = p.F(theta)
 	theta -= dt
 
-	for p.F(theta) > ref {
+	for p.F(theta) < ref {
 		ref = p.F(theta)
 		theta += dt
 	}
@@ -80,8 +82,8 @@ func (p particle) Update_minima() {
 }
 
 // looks for the position with maximum energy between the two minima (returns 0 if min1=min2)
-func (p particle) Update_maximum() {
-	if p.min1-p.min2 < 0.001 {
+func (p *particle) Update_maximum() {
+	if math.Abs(p.min1-p.min2) < 0.001 {
 		p.Ebar1 = 0.
 		p.Ebar2 = 0.
 		p.onemin = true
@@ -90,7 +92,7 @@ func (p particle) Update_maximum() {
 	theta := p.min1
 	ref := p.E1
 	dt := 0.001
-	for p.F(theta) < ref {
+	for p.F(theta) > ref {
 		ref = p.F(theta)
 		theta += dt
 	}
@@ -101,21 +103,24 @@ func (p particle) Update_maximum() {
 }
 
 // returns the z-component of the particle magnetisation
-func (p particle) M() float64 {
+func (p *particle) M() float64 {
 	return p.mz
 }
 
 //performs one timestep with stepsize Dt, using euler forward method
-func (p particle) step() {
+func (p *particle) step() {
+	p.Update_minima()
+	p.Update_maximum()
+
 	if p.onemin {
 		if p.m1 < math.Pi/2. {
 			p.m1 = 1.
 			p.m2 = 0.
-			p.mz = p.min1
+			p.mz = math.Cos(p.min1)
 		} else {
 			p.m1 = 0.
 			p.m2 = 1.
-			p.mz = p.min2
+			p.mz = math.Cos(p.min2)
 		}
 		return
 	}
@@ -124,8 +129,8 @@ func (p particle) step() {
 	if p.onemin == false {
 		onetotwo := tau0 * math.Exp(p.Ebar1/kb/Temp)
 		twotoone := tau0 * math.Exp(p.Ebar2/kb/Temp)
-		p.m1 += Dt * (twotoone - onetotwo)
-		p.m2 += Dt * (onetotwo - twotoone)
+		p.m1 += Dt * (p.m2*twotoone - p.m1*onetotwo)
+		p.m2 += Dt * (p.m1*onetotwo - p.m2*twotoone)
 
 	}
 	//norm in between
@@ -135,7 +140,7 @@ func (p particle) step() {
 	}
 
 	//update M
-	p.mz = p.m1*p.min1 + p.m2*p.min2
+	p.mz = p.m1*math.Cos(p.min1) + p.m2*math.Cos(p.min2)
 }
 
 // makes a new particle, given its anisotropy angle/constant,radius and msat

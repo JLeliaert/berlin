@@ -18,6 +18,7 @@ var (
 //Initialise the outputdir
 func InitOutput(interval float64) {
 
+	outputinterval = interval
 	// make and clear output directory
 	fname := os.Args[0]
 	f2name := strings.Split(fname, "/") // TODO: use path.Split?
@@ -54,7 +55,7 @@ func check(e error) {
 
 //writes the head of the outputfile
 func writeheader() {
-	header := fmt.Sprintf("#t\t<mz>\tB")
+	header := fmt.Sprintf("#t\t<mz>\tB\n")
 	_, err = outputFile.WriteString(header)
 	check(err)
 }
@@ -68,7 +69,7 @@ func write() {
 			avg += Particles[i].mz
 		}
 
-		string := fmt.Sprintf("%e\t%v\t%v", T, avg, B_ext(T))
+		string := fmt.Sprintf("%e\t%v\t%v\n", T, avg, B_ext(T))
 		_, err = outputFile.WriteString(string)
 		check(err)
 		twrite = 0.

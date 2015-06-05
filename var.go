@@ -2,11 +2,11 @@ package berlin
 
 var (
 	//These variables can be set in the input files
-	B_ext     func(t float64) float64      // External applied field in T
-	Dt        float64                 = -1 // Timestep in s
-	T         float64                      // Time in s
-	Temp      float64                 = -1 // Temperature in K
-	Particles []*particle                  // contains all particles
+	B_ext     func(t float64) float64        // External applied field in T
+	Dt        float64                 = 1e-9 // Timestep in s
+	T         float64                        // Time in s
+	Temp      float64                 = 0.    // Temperature in K
+	Particles []*particle                    // contains all particles
 )
 
 //initialised B_ext functions
