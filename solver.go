@@ -4,8 +4,10 @@ import ()
 
 //Runs the simulation for a certain time
 func Run(time float64) {
+	write()
 	for j := T; T < j+time; {
 		step(Particles)
+		write()
 		T += Dt
 	}
 

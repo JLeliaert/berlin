@@ -8,13 +8,15 @@ import (
 )
 
 var (
-	outputFile *os.File
-	err        error
-	outdir     string
+	outputFile     *os.File
+	err            error
+	outdir         string
+	twrite         float64
+	outputinterval float64
 )
 
 //Initialise the outputdir
-func initOutput() {
+func InitOutput(interval float64) {
 
 	// make and clear output directory
 	fname := os.Args[0]
@@ -39,6 +41,7 @@ func initOutput() {
 
 	outputFile, err = os.Create(outdir + "/table.txt")
 	check(err)
+	writeheader()
 
 }
 
@@ -47,4 +50,28 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+//writes the head of the outputfile
+func writeheader() {
+	header := fmt.Sprintf("#t\t<mz>\tB")
+	_, err = outputFile.WriteString(header)
+	check(err)
+}
+
+//Writes the time,average magnetisation and external field to table
+func write() {
+	if twrite >= outputinterval && outputinterval != 0 {
+		//calculate m_avg
+		avg := 0.
+		for i := range Particles {
+			avg += Particles[i].mz
+		}
+
+		string := fmt.Sprintf("%e\t%v\t%v", T, avg, B_ext(T))
+		_, err = outputFile.WriteString(string)
+		check(err)
+		twrite = 0.
+	}
+	twrite += Dt
 }
