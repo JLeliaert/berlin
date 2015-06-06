@@ -2,7 +2,7 @@ package berlin
 
 import (
 	"math"
-	//	"fmt"
+//	"fmt"
 )
 
 //A particle has a K,V,u,Ms
@@ -45,7 +45,7 @@ func (p *particle) TS(theta float64) float64 {
 	if Temp == 0. {
 		return 0.
 	}
-	if theta == 0. {
+	if (theta < 0.0001||theta>math.Pi-0.0001){
 		return -10000.
 	}
 	return -Temp * kb * math.Log(1/2.*math.Sin(theta)*math.Sin(theta))
@@ -58,6 +58,7 @@ func (p *particle) F(theta float64) float64 {
 
 // looks for the position and energies of the minima in the free energy, angle accuracy is 0.001 rad
 func (p *particle) Update_minima() {
+
 	//find first minimum
 	theta := 0.
 	dt := 0.001
@@ -85,13 +86,13 @@ func (p *particle) Update_minima() {
 	p.min2 = theta
 	p.E2 = ref
 
-	//fmt.Println("min1",p.min1)
-	//fmt.Println("m1  ",p.m1  )
-	//fmt.Println("E1  ",p.E1  )
-	//fmt.Println("min2",p.min2)
-	//fmt.Println("m2  ",p.m2  )
-	//fmt.Println("E2  ",p.E2  )
-	//	fmt.Println()
+//	fmt.Println("min1",p.min1)
+//	fmt.Println("m1  ",p.m1  )
+//	fmt.Println("E1  ",p.E1  )
+//	fmt.Println("min2",p.min2)
+//	fmt.Println("m2  ",p.m2  )
+//	fmt.Println("E2  ",p.E2  )
+//	fmt.Println()
 
 }
 
@@ -145,8 +146,8 @@ func (p *particle) step() {
 		if Temp != 0. {
 			onetotwo := tau0 * math.Exp(p.Ebar1/kb/Temp)
 			twotoone := tau0 * math.Exp(p.Ebar2/kb/Temp)
-			p.m1 += Dt * (p.m2*twotoone - p.m1*onetotwo)
-			p.m2 += Dt * (p.m1*onetotwo - p.m2*twotoone)
+			p.m1 += Dt * (p.m2/twotoone - p.m1/onetotwo)
+			p.m2 += Dt * (p.m1/onetotwo - p.m2/twotoone)
 		}
 	}
 
