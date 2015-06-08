@@ -46,7 +46,7 @@ func (p *particle) TS(theta float64) float64 {
 		return 0.
 	}
 	if (theta < 0.0001||theta>math.Pi-0.0001){
-		return -1.
+		return -1.e-10
 	}
 	return Temp * kb * math.Log(1./2.*math.Sin(theta)*math.Sin(theta))
 }
@@ -60,7 +60,7 @@ func (p *particle) F(theta float64) float64 {
 func (p *particle) Update_minima() {
 
 //for i :=0.;i<math.Pi;i+=0.001{
-//	fmt.Println(i, p.F(i))
+//	fmt.Println(i, p.E_anis(i))
 //}
 	//find first minimum
 	theta := 0.
@@ -89,13 +89,13 @@ func (p *particle) Update_minima() {
 	p.min2 = theta
 	p.E2 = ref
 
-	//fmt.Println("min1",p.min1)
-	//fmt.Println("m1  ",p.m1  )
-	//fmt.Println("E1  ",p.E1  )
-	//fmt.Println("min2",p.min2)
-	//fmt.Println("m2  ",p.m2  )
-	//fmt.Println("E2  ",p.E2  )
-	//fmt.Println()
+//	fmt.Println("min1",p.min1)
+//	fmt.Println("m1  ",p.m1  )
+//	fmt.Println("E1  ",p.E1  )
+//	fmt.Println("min2",p.min2)
+//	fmt.Println("m2  ",p.m2  )
+//	fmt.Println("E2  ",p.E2  )
+//	fmt.Println()
 
 }
 
@@ -151,9 +151,9 @@ func (p *particle) step() {
 	
 			onetotwo := Tau0 * math.Exp(p.Ebar1/kb/Temp)
 			twotoone := Tau0 * math.Exp(p.Ebar2/kb/Temp)
-	//fmt.Println(p.Ebar1)
-	//fmt.Println(p.Ebar2)
-	//fmt.Println()
+//	fmt.Println(p.Ebar1)
+//	fmt.Println(p.Ebar2)
+//	fmt.Println()
 
 			p.m1 += Dt * (p.m2/twotoone - p.m1/onetotwo)
 			p.m2 += Dt * (p.m1/onetotwo - p.m2/twotoone)
