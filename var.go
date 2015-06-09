@@ -8,6 +8,7 @@ var (
 	T         float64                        // Time in s
 	Temp      float64                 = 0.   // Temperature in K
 	Particles []*particle                    // contains all particles
+	Entropy bool=true
 )
 
 //initialised B_ext functions
