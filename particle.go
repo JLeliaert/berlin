@@ -230,9 +230,9 @@ func (p *particle) M() float64 {
 
 //puts all the particles in their ground state
 func Relax() {
-for i := range Particles {
-			Particles[i].relax()
-		}
+	for i := range Particles {
+		Particles[i].relax()
+	}
 
 }
 
@@ -321,10 +321,28 @@ func (p *particle) step() {
 
 // makes a new particle, given its anisotropy angle/constant,radius and msat
 func NewParticle(radius float64, Msat float64, U_anis float64, Ku1 float64) *particle {
-	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis,m1: 1.}
+	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis, m1: 1.}
 }
 
 // Add a particle to the Particles list
 func AddParticle(p *particle) {
 	Particles = append(Particles, p)
+}
+
+// Copies a given particle, can be used to make size or anisotropy axis distributions
+func CopyParticle(p *particle) *particle {
+	return &particle{r: p.r, msat: p.msat, ku1: p.ku1, u_anis: p.u_anis, m1: 1.}
+}
+
+// gives the ensemble random anisotropy axes (pi/2N is discritization in radians, N is number of u_anis directions)
+func Random_anis_axis(N int) {
+	var Newparticles []*particle
+	for i := 0; i < N; i += 1 {
+		for j := range Particles {
+			newparticle := CopyParticle(Particles[j])
+			newparticle.u_anis = math.Pi/2.*float64(i)/float64(N-1)
+			Newparticles = append(Newparticles, newparticle)
+		}
+	}
+	Particles = Newparticles
 }

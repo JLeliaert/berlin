@@ -77,3 +77,14 @@ func write() {
 	}
 	twrite += Dt
 }
+
+func Printparticles(){
+	for i := range Particles {
+		fmt.Println("Particle#: ",i)
+		fmt.Println("u_anis: ",Particles[i].u_anis)
+		fmt.Println("ku1: ",Particles[i].ku1)
+		fmt.Println("r: ",Particles[i].r)
+		fmt.Println("msat: ",Particles[i].msat)
+		fmt.Println()
+		}
+}
