@@ -221,9 +221,11 @@ func (p *particle) M() float64 {
 //performs one timestep with stepsize Dt, using euler forward method
 func (p *particle) step() {
 
+	//step 1 of heun scheme
 	p.Update_minima()
 	p.Update_maximum()
 
+	// if there is only one minimum, 1 step is all there is to it
 	if p.onemin {
 		if p.m1 < math.Pi/2. {
 			p.m1 = 1.
@@ -236,30 +238,36 @@ func (p *particle) step() {
 		}
 		return
 	}
+	k1 := 0.
+	k2 := 0.
 
 	//update m1 and m2
-	//TODO you calculate two times the same thing!
 	if p.onemin == false {
 		if Temp != 0. {
+			onetotwo := p.m1 / Tau0 / math.Exp(p.Ebar1/kb/Temp)
+			twotoone := p.m2 / Tau0 / math.Exp(p.Ebar2/kb/Temp)
+			k1 = onetotwo
+			k2 = twotoone
 
-			onetotwo := Tau0 * math.Exp(p.Ebar1/kb/Temp)
-			twotoone := Tau0 * math.Exp(p.Ebar2/kb/Temp)
-			//fmt.Println("bar1",p.Ebar1)
-			//fmt.Println("bar2",p.Ebar2)
-			//fmt.Println("onetotwo",onetotwo)
-			//fmt.Println("twotoone",twotoone)
-			//fmt.Println()
-			oldm1 := p.m1
-			oldm2 := p.m2
+			p.m1 += Dt * (twotoone - onetotwo)
+			p.m2 -= Dt * (twotoone - onetotwo)
 
-			p.m1 += Dt * (oldm2/twotoone - oldm1/onetotwo)
-			p.m2 -= Dt * (oldm2/twotoone - oldm1/onetotwo)
-
-			p.m1 = p.m1 / (p.m1 + p.m2)
-			p.m2 = p.m2 / (p.m1 + p.m2)
 		}
+	}
+
+	//step 2 of heun scheme
+	p.Update_minima()
+	p.Update_maximum()
+	if Temp != 0. {
+		onetotwo := p.m1 / Tau0 / math.Exp(p.Ebar1/kb/Temp)
+		twotoone := p.m2 / Tau0 / math.Exp(p.Ebar2/kb/Temp)
+
+		p.m1 += 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
+		p.m2 -= 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
 
 	}
+	p.m1 = p.m1 / (p.m1 + p.m2)
+	p.m2 = p.m2 / (p.m1 + p.m2)
 
 	//update mz
 	p.mz = p.m1*math.Cos(p.min1[0]) + p.m2*math.Cos(p.min2[0])
