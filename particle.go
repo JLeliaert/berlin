@@ -1,8 +1,8 @@
 package berlin
 
 import (
-	"math"
 	//	"fmt"
+	"math"
 )
 
 //A particle has a K,V,u,Ms
@@ -95,42 +95,56 @@ func (p *particle) dFdtheta(theta, psi float64) float64 {
 	return p.dE_anis(theta, psi) + p.dE_ext(theta) - p.dTS(theta)
 }
 
-// looks for the position and energies of the minima in the free energy, angle accuracy is 0.001 rad
+// looks for the position and energies of the minima in the free energy, angle accuracy is 0.0001 rad
 func (p *particle) Update_minima() {
 
-	//for i :=0.;i<math.Pi;i+=0.001{
-	//	fmt.Println(i, p.TS(i))
+	//for i :=0.;i<math.Pi;i+=0.01{
+	//	fmt.Println(i, p.F(i,0.))
 	//}
+
 	//find first minimum
 	theta := 0.
 	psi := 0.
-	dt := 0.001
+	dt := 0.1
 	ref := p.F(theta, psi)
 	theta += dt
 
-	for p.F(theta, psi) < ref {
+	for dt > 0.00001 {
+		for p.F(theta, psi) <= ref {
+			//	fmt.Println(dt,theta,ref-p.F(theta,psi))
+			ref = p.F(theta, psi)
+			theta += dt
+		}
+		theta -= 2 * dt
 		ref = p.F(theta, psi)
-
-		theta += dt
+		dt /= 2.
 	}
+
 	p.min1 = Coord{theta, psi}
 	p.E1 = ref
 
 	//find second minimum
 	theta = math.Pi
 	psi = math.Pi
-	dt = 0.001
+	dt = 0.1
 	ref = p.F(theta, psi)
 	theta -= dt
 
-	for p.F(theta, psi) < ref {
+	for dt > 0.00001 {
+		for p.F(theta, psi) <= ref {
+			ref = p.F(theta, psi)
+			theta -= dt
+		}
+		theta += 2 * dt
 		ref = p.F(theta, psi)
-		theta -= dt
+		dt /= 2.
 	}
+
 	p.min2 = Coord{theta, psi}
 	p.E2 = ref
 
 	//fmt.Println("min1",p.min1[0])
+	//fmt.Println(T,p.min1[0],p.min2[0])
 	//fmt.Println("min1psi",p.min1[1])
 	//fmt.Println("m1  ",p.m1  )
 	//fmt.Println("E1  ",p.E1  )
@@ -138,13 +152,15 @@ func (p *particle) Update_minima() {
 	//fmt.Println("min2psi",p.min2[1])
 	//fmt.Println("m2  ",p.m2  )
 	//fmt.Println("E2  ",p.E2  )
+	//fmt.Println("m1+m2",p.m1+p.m2)
+	//fmt.Println("onemine",p.onemin)
 	//fmt.Println()
 
 }
 
 // looks for the position with maximum energy between the two minima (returns 0 if min1=min2)
 func (p *particle) Update_maximum() {
-	if p.min1.Dist(p.min2) < 0.001 {
+	if p.min1.Dist(p.min2) < 0.00001 {
 		p.Ebar1 = 0.
 		p.Ebar2 = 0.
 		p.onemin = true
@@ -152,30 +168,42 @@ func (p *particle) Update_maximum() {
 	}
 
 	//fmt.Println(p.min1[0],p.min2[0])
-	if math.Abs(p.min1[0]-p.min2[0]) < 0.003 {
+	if math.Abs(p.min1[0]-p.min2[0]) < 0.00021 {
 		ref := p.F(p.min1[0], math.Pi/2.)
 		p.Ebar1 = ref - p.E1
 		p.Ebar2 = ref - p.E2
 		p.onemin = false
 		return
 	}
+
 	theta := p.min1[0]
 	psi := math.Pi / 2.
 	ref := p.dFdtheta(theta, psi)
+
+	//find maximum
 	//fmt.Println("ref", ref)
 	dt := 0.
 	if p.min1[0] < p.min2[0] {
-		dt = 0.001
+		dt = 0.1
 	} else {
-		dt = -0.001
+		dt = -0.1
 	}
+
 	//until df/dtheta changes sign
-	for p.dFdtheta(theta, psi)*ref > 0. {
+	for math.Abs(dt) > 0.00001 {
+		for p.dFdtheta(theta, psi)*ref > 0. {
+			ref = p.dFdtheta(theta, psi)
+			//fmt.Println("theta,ref",theta,ref)
+			theta += dt
+		}
+		theta -= 2 * dt
 		ref = p.dFdtheta(theta, psi)
-		//fmt.Println("theta,ref",theta,ref)
-		theta += dt
+		dt /= 2.
 	}
+
 	ref = p.F(theta, psi)
+	//fmt.Println("maxE",ref)
+
 	p.Ebar1 = ref - p.E1
 	p.Ebar2 = ref - p.E2
 	//fmt.Println(p.Ebar1)
@@ -218,20 +246,22 @@ func (p *particle) step() {
 			twotoone := Tau0 * math.Exp(p.Ebar2/kb/Temp)
 			//fmt.Println("bar1",p.Ebar1)
 			//fmt.Println("bar2",p.Ebar2)
+			//fmt.Println("onetotwo",onetotwo)
+			//fmt.Println("twotoone",twotoone)
 			//fmt.Println()
+			oldm1 := p.m1
+			oldm2 := p.m2
 
-			p.m1 += Dt * (p.m2/twotoone - p.m1/onetotwo)
-			p.m2 += Dt * (p.m1/onetotwo - p.m2/twotoone)
+			p.m1 += Dt * (oldm2/twotoone - oldm1/onetotwo)
+			p.m2 -= Dt * (oldm2/twotoone - oldm1/onetotwo)
+
+			p.m1 = p.m1 / (p.m1 + p.m2)
+			p.m2 = p.m2 / (p.m1 + p.m2)
 		}
+
 	}
 
-	//norm in between
-	if p.m1+p.m2 != 1. {
-		p.m1 = p.m1 / (p.m1 + p.m2)
-		p.m2 = p.m2 / (p.m1 + p.m2)
-	}
-
-	//update M
+	//update mz
 	p.mz = p.m1*math.Cos(p.min1[0]) + p.m2*math.Cos(p.min2[0])
 }
 
