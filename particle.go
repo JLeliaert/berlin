@@ -116,6 +116,9 @@ func (p *particle) Update_minima() {
 			theta += dt
 		}
 		theta -= 2 * dt
+		if theta < 0. {
+			theta = 0.
+		}
 		ref = p.F(theta, psi)
 		dt /= 2.
 	}
@@ -136,6 +139,9 @@ func (p *particle) Update_minima() {
 			theta -= dt
 		}
 		theta += 2 * dt
+		if theta > math.Pi {
+			theta = math.Pi
+		}
 		ref = p.F(theta, psi)
 		dt /= 2.
 	}
@@ -191,18 +197,22 @@ func (p *particle) Update_maximum() {
 
 	//until df/dtheta changes sign
 	for math.Abs(dt) > 0.00001 {
-		for p.dFdtheta(theta, psi)*ref > 0. {
+		for p.dFdtheta(theta, psi)*ref >= 0. {
 			ref = p.dFdtheta(theta, psi)
-			//fmt.Println("theta,ref",theta,ref)
 			theta += dt
 		}
 		theta -= 2 * dt
+		if theta < 0. {
+			theta = 0.
+		}
+		if theta > math.Pi {
+			theta = math.Pi
+		}
 		ref = p.dFdtheta(theta, psi)
 		dt /= 2.
 	}
 
 	ref = p.F(theta, psi)
-	//fmt.Println("maxE",ref)
 
 	p.Ebar1 = ref - p.E1
 	p.Ebar2 = ref - p.E2
@@ -216,6 +226,42 @@ func (p *particle) Update_maximum() {
 // returns the z-component of the particle magnetisation
 func (p *particle) M() float64 {
 	return p.mz
+}
+
+//puts all the particles in their ground state
+func Relax() {
+for i := range Particles {
+			Particles[i].relax()
+		}
+
+}
+
+//puts the magnetisation of the particle in its ground state
+func (p *particle) relax() {
+
+	p.Update_minima()
+	p.Update_maximum()
+
+	// if there is only one minimum, this is all there is to it
+	if p.onemin {
+		if p.m1 < math.Pi/2. {
+			p.m1 = 1.
+			p.m2 = 0.
+			p.mz = math.Cos(p.min1[0])
+		} else {
+			p.m1 = 0.
+			p.m2 = 1.
+			p.mz = math.Cos(p.min2[0])
+		}
+		return
+	}
+
+	p.m1 = math.Exp(p.E1-p.E2) / (1 + math.Exp(p.E1-p.E2))
+
+	p.m2 = 1 - p.m1
+
+	//update mz
+	p.mz = p.m1*math.Cos(p.min1[0]) + p.m2*math.Cos(p.min2[0])
 }
 
 //performs one timestep with stepsize Dt, using euler forward method
@@ -275,7 +321,7 @@ func (p *particle) step() {
 
 // makes a new particle, given its anisotropy angle/constant,radius and msat
 func NewParticle(radius float64, Msat float64, U_anis float64, Ku1 float64) *particle {
-	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis}
+	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis,m1: 1.}
 }
 
 // Add a particle to the Particles list
