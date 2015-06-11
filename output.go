@@ -68,7 +68,7 @@ func write() {
 		for i := range Particles {
 			avg += Particles[i].mz
 		}
-		avg/= float64(len(Particles))
+		avg /= float64(len(Particles))
 
 		string := fmt.Sprintf("%e\t%v\t%v\n", T, avg, B_ext(T))
 		_, err = outputFile.WriteString(string)

@@ -2,7 +2,7 @@ package berlin
 
 import (
 	"math"
-//	"fmt"
+	//	"fmt"
 )
 
 //A particle has a K,V,u,Ms
@@ -14,10 +14,10 @@ type particle struct {
 	msat   float64 // Saturation magnetisation in A/m
 
 	//variables related to the energy landscape
-	min1   Coord // position of first minimum
+	min1   Coord   // position of first minimum
 	m1     float64 // percentage of partices in first minimum
 	E1     float64 // energy of first minimum
-	min2   Coord // position of second minimum
+	min2   Coord   // position of second minimum
 	m2     float64 // percentage of particles in second minimum
 	E2     float64 // energy of second minimum
 	Ebar1  float64 // energy barrier to jump from E1 to E2
@@ -31,9 +31,10 @@ func (p *particle) V() float64 {
 }
 
 // returns the energy due to the anisotropy of the particle as function of theta
-func (p *particle) E_anis(theta,psi float64) float64 {
-	angles:=(math.Sin(theta)*math.Sin(p.u_anis)*math.Cos(psi) + math.Cos(theta)*math.Cos(p.u_anis))
-	return -p.ku1 * p.V() * angles*angles }
+func (p *particle) E_anis(theta, psi float64) float64 {
+	angles := (math.Sin(theta)*math.Sin(p.u_anis)*math.Cos(psi) + math.Cos(theta)*math.Cos(p.u_anis))
+	return -p.ku1 * p.V() * angles * angles
+}
 
 // returns the energy due to the external field as function of theta
 func (p *particle) E_ext(theta float64) float64 {
@@ -42,26 +43,29 @@ func (p *particle) E_ext(theta float64) float64 {
 
 // returns the entropy times temperature as function of theta
 func (p *particle) TS(theta float64) float64 {
-	if Entropy==false {return 0.}
+	if Entropy == false {
+		return 0.
+	}
 	if Temp == 0. {
 		return 0.
 	}
-	if (theta < 0.0001||theta>math.Pi-0.0001){
+	if theta < 0.0001 || theta > math.Pi-0.0001 {
 		return -1.e-10
 	}
 	return Temp * kb * math.Log(1./2.*math.Sin(theta)*math.Sin(theta))
 }
 
 // returns the total free energy as function of theta
-func (p *particle) F(theta,psi float64) float64 {
-	return p.E_anis(theta,psi) + p.E_ext(theta) - p.TS(theta)
+func (p *particle) F(theta, psi float64) float64 {
+	return p.E_anis(theta, psi) + p.E_ext(theta) - p.TS(theta)
 }
 
 // returns the derivative of the energy due to the anisotropy of the particle as function to theta
-func (p *particle) dE_anis(theta,psi float64) float64 {
-	angles1:=math.Cos(theta)*math.Cos(psi)*math.Sin(p.u_anis)-math.Sin(theta)*math.Cos(p.u_anis)
-	angles2:=math.Cos(theta)*math.Cos(p.u_anis)+math.Cos(psi)*math.Sin(theta)*math.Sin(p.u_anis)
-	return -2.*p.ku1 * p.V() * angles1 * angles2 }
+func (p *particle) dE_anis(theta, psi float64) float64 {
+	angles1 := math.Cos(theta)*math.Cos(psi)*math.Sin(p.u_anis) - math.Sin(theta)*math.Cos(p.u_anis)
+	angles2 := math.Cos(theta)*math.Cos(p.u_anis) + math.Cos(psi)*math.Sin(theta)*math.Sin(p.u_anis)
+	return -2. * p.ku1 * p.V() * angles1 * angles2
+}
 
 // returns the derivative of energy due to the external field as function to theta
 func (p *particle) dE_ext(theta float64) float64 {
@@ -70,60 +74,60 @@ func (p *particle) dE_ext(theta float64) float64 {
 
 // returns the derivative of the entropy times temperature as function to theta
 func (p *particle) dTS(theta float64) float64 {
-	if Entropy==false {return 0.}
+	if Entropy == false {
+		return 0.
+	}
 	if Temp == 0. {
 		return 0.
 	}
-	if (theta < 0.0001){
+	if theta < 0.0001 {
 		return 1.e-10
 	}
-	if (theta>math.Pi-0.0001){
+	if theta > math.Pi-0.0001 {
 		return -1.e-10
 	}
 
 	return Temp * kb / math.Tan(theta)
 }
 
-
-
 // returns the derivative of the total free energy to theta
-func (p *particle) dFdtheta(theta,psi float64) float64 {
-	return p.dE_anis(theta,psi) + p.dE_ext(theta) - p.dTS(theta)
+func (p *particle) dFdtheta(theta, psi float64) float64 {
+	return p.dE_anis(theta, psi) + p.dE_ext(theta) - p.dTS(theta)
 }
 
 // looks for the position and energies of the minima in the free energy, angle accuracy is 0.001 rad
 func (p *particle) Update_minima() {
 
-//for i :=0.;i<math.Pi;i+=0.001{
-//	fmt.Println(i, p.E_anis(i))
-//}
+	//for i :=0.;i<math.Pi;i+=0.001{
+	//	fmt.Println(i, p.TS(i))
+	//}
 	//find first minimum
 	theta := 0.
-	psi :=0.
+	psi := 0.
 	dt := 0.001
-	ref := p.F(theta,psi)
+	ref := p.F(theta, psi)
 	theta += dt
 
-	for p.F(theta,psi) < ref {
-		ref = p.F(theta,psi)
+	for p.F(theta, psi) < ref {
+		ref = p.F(theta, psi)
 
 		theta += dt
 	}
-	p.min1 = Coord{theta,psi}
+	p.min1 = Coord{theta, psi}
 	p.E1 = ref
 
 	//find second minimum
 	theta = math.Pi
-	psi =math.Pi
+	psi = math.Pi
 	dt = 0.001
-	ref = p.F(theta,psi)
+	ref = p.F(theta, psi)
 	theta -= dt
 
-	for p.F(theta,psi) < ref {
-		ref = p.F(theta,psi)
+	for p.F(theta, psi) < ref {
+		ref = p.F(theta, psi)
 		theta -= dt
 	}
-	p.min2 = Coord{theta,psi}
+	p.min2 = Coord{theta, psi}
 	p.E2 = ref
 
 	//fmt.Println("min1",p.min1[0])
@@ -148,26 +152,35 @@ func (p *particle) Update_maximum() {
 	}
 
 	//fmt.Println(p.min1[0],p.min2[0])
-	if math.Abs(p.min1[0]-p.min2[0])<0.003{
-		ref := p.F(p.min1[0],math.Pi/2.) 
+	if math.Abs(p.min1[0]-p.min2[0]) < 0.003 {
+		ref := p.F(p.min1[0], math.Pi/2.)
 		p.Ebar1 = ref - p.E1
 		p.Ebar2 = ref - p.E2
 		p.onemin = false
 		return
 	}
 	theta := p.min1[0]
-	psi := math.Pi/2.
-	ref := p.dFdtheta(theta,psi)
+	psi := math.Pi / 2.
+	ref := p.dFdtheta(theta, psi)
 	//fmt.Println("ref", ref)
-	dt := 0.001
+	dt := 0.
+	if p.min1[0] < p.min2[0] {
+		dt = 0.001
+	} else {
+		dt = -0.001
+	}
 	//until df/dtheta changes sign
-	for p.dFdtheta(theta,psi) * ref>0. {
-		ref = p.dFdtheta(theta,psi)
-	//	fmt.Println("theta,ref",theta,ref)
+	for p.dFdtheta(theta, psi)*ref > 0. {
+		ref = p.dFdtheta(theta, psi)
+		//fmt.Println("theta,ref",theta,ref)
 		theta += dt
 	}
+	ref = p.F(theta, psi)
 	p.Ebar1 = ref - p.E1
 	p.Ebar2 = ref - p.E2
+	//fmt.Println(p.Ebar1)
+	//fmt.Println(p.Ebar2)
+	//fmt.Println()
 	p.onemin = false
 	return
 }
@@ -200,12 +213,12 @@ func (p *particle) step() {
 	//TODO you calculate two times the same thing!
 	if p.onemin == false {
 		if Temp != 0. {
-	
+
 			onetotwo := Tau0 * math.Exp(p.Ebar1/kb/Temp)
 			twotoone := Tau0 * math.Exp(p.Ebar2/kb/Temp)
-	//fmt.Println("bar1",p.Ebar1)
-	//fmt.Println("bar2",p.Ebar2)
-	//fmt.Println()
+			//fmt.Println("bar1",p.Ebar1)
+			//fmt.Println("bar2",p.Ebar2)
+			//fmt.Println()
 
 			p.m1 += Dt * (p.m2/twotoone - p.m1/onetotwo)
 			p.m2 += Dt * (p.m1/onetotwo - p.m2/twotoone)
