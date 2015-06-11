@@ -65,10 +65,12 @@ func write() {
 	if twrite >= outputinterval && outputinterval != 0 {
 		//calculate m_avg
 		avg := 0.
+		totalmoment := 0.
 		for i := range Particles {
-			avg += Particles[i].mz
+			avg += Particles[i].mz * Particles[i].weight * Particles[i].msat * Particles[i].V()
+			totalmoment += Particles[i].weight * Particles[i].msat * Particles[i].V()
 		}
-		avg /= float64(len(Particles))
+		avg /= totalmoment
 
 		string := fmt.Sprintf("%e\t%v\t%v\n", T, avg, B_ext(T))
 		_, err = outputFile.WriteString(string)
@@ -78,13 +80,14 @@ func write() {
 	twrite += Dt
 }
 
-func Printparticles(){
+func Printparticles() {
 	for i := range Particles {
-		fmt.Println("Particle#: ",i)
-		fmt.Println("u_anis: ",Particles[i].u_anis)
-		fmt.Println("ku1: ",Particles[i].ku1)
-		fmt.Println("r: ",Particles[i].r)
-		fmt.Println("msat: ",Particles[i].msat)
+		fmt.Println("Particle#: ", i)
+		fmt.Println("u_anis: ", Particles[i].u_anis)
+		fmt.Println("ku1: ", Particles[i].ku1)
+		fmt.Println("r: ", Particles[i].r)
+		fmt.Println("weight: ", Particles[i].weight)
+		fmt.Println("msat: ", Particles[i].msat)
 		fmt.Println()
-		}
+	}
 }

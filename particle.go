@@ -12,6 +12,7 @@ type particle struct {
 	ku1    float64 // Uniaxial anisotropy constant in J/m**3
 	r      float64 // radius
 	msat   float64 // Saturation magnetisation in A/m
+	weight float64 // number of particles with these properties
 
 	//variables related to the energy landscape
 	min1   Coord   // position of first minimum
@@ -321,7 +322,7 @@ func (p *particle) step() {
 
 // makes a new particle, given its anisotropy angle/constant,radius and msat
 func NewParticle(radius float64, Msat float64, U_anis float64, Ku1 float64) *particle {
-	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis, m1: 1.}
+	return &particle{r: radius, msat: Msat, ku1: Ku1, u_anis: U_anis, m1: 1., weight: 1.}
 }
 
 // Add a particle to the Particles list
@@ -331,7 +332,7 @@ func AddParticle(p *particle) {
 
 // Copies a given particle, can be used to make size or anisotropy axis distributions
 func CopyParticle(p *particle) *particle {
-	return &particle{r: p.r, msat: p.msat, ku1: p.ku1, u_anis: p.u_anis, m1: 1.}
+	return &particle{r: p.r, msat: p.msat, ku1: p.ku1, u_anis: p.u_anis, m1: 1., weight: 1.}
 }
 
 // gives the ensemble random anisotropy axes (pi/2N is discritization in radians, N is number of u_anis directions)
@@ -340,8 +341,32 @@ func Random_anis_axis(N int) {
 	for i := 0; i < N; i += 1 {
 		for j := range Particles {
 			newparticle := CopyParticle(Particles[j])
-			newparticle.u_anis = math.Pi/2.*float64(i)/float64(N-1)
+			newparticle.u_anis = math.Pi / 2. * float64(i) / float64(N-1)
 			Newparticles = append(Newparticles, newparticle)
+		}
+	}
+	Particles = Newparticles
+}
+
+//helper function that returns the weight for the lognormal distribution
+func lognormal(D, avg, stdev float64) float64 {
+	prefactor := 1. / (math.Sqrt(2.*math.Pi) * stdev * D)
+	exponent := -math.Log(D/avg) * math.Log(D/avg) / 2. / stdev / stdev
+	return prefactor * math.Exp(exponent)
+}
+
+// gives the ensemble lognormal DIAMETER(!) size distribution, based on top cutoff (in nm), discretization (in nm), average (in nm) and stdev (in nm)
+func Lognormal_sizes(top, discr, avg, stdev float64) {
+	var Newparticles []*particle
+	for i := discr; i <= top; i += discr {
+		for j := range Particles {
+			dist := lognormal(i, avg, stdev)
+			if dist > 0.0001 {
+				newparticle := CopyParticle(Particles[j])
+				newparticle.r = i / 2.
+				newparticle.weight = dist
+				Newparticles = append(Newparticles, newparticle)
+			}
 		}
 	}
 	Particles = Newparticles
