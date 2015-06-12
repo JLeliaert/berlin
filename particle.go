@@ -342,6 +342,8 @@ func Random_anis_axis(N int) {
 		for j := range Particles {
 			newparticle := CopyParticle(Particles[j])
 			newparticle.u_anis = math.Pi / 2. * float64(i) / float64(N-1)
+			//TODO weights
+			newparticle.weight = Particles[j].weight * 1
 			Newparticles = append(Newparticles, newparticle)
 		}
 	}
@@ -364,7 +366,7 @@ func Lognormal_sizes(top, discr, avg, stdev float64) {
 			if dist > 0.0001 {
 				newparticle := CopyParticle(Particles[j])
 				newparticle.r = i / 2.
-				newparticle.weight = dist
+				newparticle.weight = Particles[j].weight * dist
 				Newparticles = append(Newparticles, newparticle)
 			}
 		}
