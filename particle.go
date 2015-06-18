@@ -1,7 +1,7 @@
 package berlin
 
 import (
-	//	"fmt"
+	//"fmt"
 	"math"
 )
 
@@ -28,6 +28,7 @@ type particle struct {
 }
 
 func (p *particle) V() float64 {
+	//fmt.Println(p.r)
 	return 4. / 3. * math.Pi * p.r * p.r * p.r
 }
 
@@ -161,8 +162,9 @@ func (p *particle) Update_minima() {
 	//fmt.Println("E2  ",p.E2  )
 	//fmt.Println("m1+m2",p.m1+p.m2)
 	//fmt.Println("onemine",p.onemin)
+	//fmt.Println("ebar1",p.Ebar1)
+	//fmt.Println("ebar2",p.Ebar2)
 	//fmt.Println()
-
 }
 
 // looks for the position with maximum energy between the two minima (returns 0 if min1=min2)
@@ -245,7 +247,7 @@ func (p *particle) relax() {
 
 	// if there is only one minimum, this is all there is to it
 	if p.onemin {
-		if p.m1 < math.Pi/2. {
+		if p.min1[0] < math.Pi/2. {
 			p.m1 = 1.
 			p.m2 = 0.
 			p.mz = math.Cos(p.min1[0])
@@ -274,7 +276,7 @@ func (p *particle) step() {
 
 	// if there is only one minimum, 1 step is all there is to it
 	if p.onemin {
-		if p.m1 < math.Pi/2. {
+		if p.min1[0] < math.Pi/2. {
 			p.m1 = 1.
 			p.m2 = 0.
 			p.mz = math.Cos(p.min1[0])
@@ -349,12 +351,15 @@ func axisweight(N int) float64 {
 func Random_anis_axis(N int) {
 	var Newparticles []*particle
 	totalweight := axisweight(N)
-	for i := 0; i < N; i += 1 {
-		for j := range Particles {
-			newparticle := CopyParticle(Particles[j])
-			newparticle.u_anis = math.Pi / 2. * float64(i) / float64(N-1)
-			newparticle.weight = Particles[j].weight * math.Sin(newparticle.u_anis) / totalweight
-			Newparticles = append(Newparticles, newparticle)
+	for j := range Particles {
+		for i := 0; i < N; i += 1 {
+			weight := math.Sin(Particles[j].u_anis) / totalweight
+			if weight > 0.0001 {
+				newparticle := CopyParticle(Particles[j])
+				newparticle.u_anis = math.Pi / 2. * float64(i) / float64(N-1)
+				newparticle.weight = Particles[j].weight * weight
+				Newparticles = append(Newparticles, newparticle)
+			}
 		}
 	}
 	Particles = Newparticles
@@ -375,7 +380,7 @@ func Lognormal_sizes(top, discr, avg, stdev float64) {
 			dist := lognormal(i, avg, stdev)
 			if dist > 0.0001 {
 				newparticle := CopyParticle(Particles[j])
-				newparticle.r = i / 2.
+				newparticle.r = i / 2. * 1e-9
 				newparticle.weight = Particles[j].weight * dist
 				Newparticles = append(Newparticles, newparticle)
 			}
