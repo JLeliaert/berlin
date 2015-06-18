@@ -1,7 +1,7 @@
 package berlin
 
 import (
-	//	"fmt"
+	//		"fmt"
 	"math"
 )
 
@@ -133,7 +133,6 @@ func (p *particle) Update_minima() {
 	psi = math.Pi
 	dt = 0.1
 	ref = p.F(theta, psi)
-	theta -= dt
 
 	for dt > 0.00001 {
 		for p.F(theta, psi) <= ref {
@@ -296,6 +295,7 @@ func (p *particle) step() {
 	k1 := 0.
 	k2 := 0.
 
+	predicted := 0.
 	//update m1 and m2
 	if p.onemin == false {
 		if Temp != 0. {
@@ -305,6 +305,7 @@ func (p *particle) step() {
 			k2 = twotoone
 
 			p.m1 += Dt * (twotoone - onetotwo)
+			predicted = p.m1
 			p.m2 -= Dt * (twotoone - onetotwo)
 
 		}
@@ -320,6 +321,9 @@ func (p *particle) step() {
 		p.m1 += 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
 		p.m2 -= 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
 
+	}
+	if Adaptivestep && math.Abs(p.m1-predicted) > maxerr {
+		maxerr = math.Abs(p.m1 - predicted)
 	}
 	p.m1 = p.m1 / (p.m1 + p.m2)
 	p.m2 = p.m2 / (p.m1 + p.m2)

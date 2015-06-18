@@ -55,7 +55,7 @@ func check(e error) {
 
 //writes the head of the outputfile
 func writeheader() {
-	header := fmt.Sprintf("#t\t<mz>\tB\n")
+	header := fmt.Sprintf("#t\t<mz>\tB\tDt\n")
 	_, err = outputFile.WriteString(header)
 	check(err)
 }
@@ -72,7 +72,7 @@ func write() {
 		}
 		avg /= totalmoment
 
-		string := fmt.Sprintf("%e\t%v\t%v\n", T, avg, B_ext(T))
+		string := fmt.Sprintf("%e\t%v\t%v\t%v\n", T, avg, B_ext(T), Dt)
 		_, err = outputFile.WriteString(string)
 		check(err)
 		twrite = 0.
