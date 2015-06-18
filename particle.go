@@ -1,7 +1,7 @@
 package berlin
 
 import (
-	//"fmt"
+	//	"fmt"
 	"math"
 )
 
@@ -151,19 +151,19 @@ func (p *particle) Update_minima() {
 	p.min2 = Coord{theta, psi}
 	p.E2 = ref
 
-	//fmt.Println("min1",p.min1[0])
-	//fmt.Println(T,p.min1[0],p.min2[0])
-	//fmt.Println("min1psi",p.min1[1])
-	//fmt.Println("m1  ",p.m1  )
-	//fmt.Println("E1  ",p.E1  )
-	//fmt.Println("min2",p.min2[0])
-	//fmt.Println("min2psi",p.min2[1])
-	//fmt.Println("m2  ",p.m2  )
-	//fmt.Println("E2  ",p.E2  )
-	//fmt.Println("m1+m2",p.m1+p.m2)
-	//fmt.Println("onemine",p.onemin)
-	//fmt.Println("ebar1",p.Ebar1)
-	//fmt.Println("ebar2",p.Ebar2)
+	//fmt.Println("min1", p.min1[0])
+	//fmt.Println(T, p.min1[0], p.min2[0])
+	//fmt.Println("min1psi", p.min1[1])
+	//fmt.Println("m1  ", p.m1)
+	//fmt.Println("E1  ", p.E1)
+	//fmt.Println("min2", p.min2[0])
+	//fmt.Println("min2psi", p.min2[1])
+	//fmt.Println("m2  ", p.m2)
+	//fmt.Println("E2  ", p.E2)
+	//fmt.Println("m1+m2", p.m1+p.m2)
+	//fmt.Println("onemine", p.onemin)
+	//fmt.Println("ebar1", p.Ebar1)
+	//fmt.Println("ebar2", p.Ebar2)
 	//fmt.Println()
 }
 
@@ -177,7 +177,7 @@ func (p *particle) Update_maximum() {
 	}
 
 	//fmt.Println(p.min1[0],p.min2[0])
-	if math.Abs(p.min1[0]-p.min2[0]) < 0.00021 {
+	if math.Abs(p.min1[0]-p.min2[0]) < 0.0021 {
 		ref := p.F(p.min1[0], math.Pi/2.)
 		p.Ebar1 = ref - p.E1
 		p.Ebar2 = ref - p.E2
@@ -192,17 +192,23 @@ func (p *particle) Update_maximum() {
 	//find maximum
 	//fmt.Println("ref", ref)
 	dt := 0.
-	if p.min1[0] < p.min2[0] {
-		dt = 0.1
-	} else {
-		dt = -0.1
-	}
+	//if p.min1[0] < p.min2[0] {
+	//	dt = 0.1
+	//} else {
+	//	dt = -0.1
+	//}
+	dt = (p.min2[0] - p.min1[0]) / 3.
 
-	//until df/dtheta changes sign
+	//until df/dtheta changes sign or not found
 	for math.Abs(dt) > 0.00001 {
 		for p.dFdtheta(theta, psi)*ref >= 0. {
+			//	fmt.Println(p.dFdtheta(theta, psi))
 			ref = p.dFdtheta(theta, psi)
 			theta += dt
+			if theta > math.Pi {
+				theta = p.min1[0] + p.min2[0]/2.
+				break
+			}
 		}
 		theta -= 2 * dt
 		if theta < 0. {
