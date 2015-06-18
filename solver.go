@@ -8,13 +8,14 @@ import (
 func Run(time float64) {
 	write()
 	for j := T; T < j+time; {
-		maxerr = 1.e-9
+		maxerr = 1.e-6
 		step(Particles)
+				if Adaptivestep {
+			if maxerr>Errtol{undobadstep(Particles)}
+			Dt = 0.95 * Dt * math.Pow(Errtol/maxerr, (1./2.))
+		}
 		write()
 		T += Dt
-		if Adaptivestep {
-			Dt = 0.95 * Dt * math.Pow(1.e-7/maxerr, (1./2.))
-		}
 	}
 
 }
@@ -24,4 +25,13 @@ func step(Particles []*particle) {
 	for _, p := range Particles {
 		p.step()
 	}
+}
+
+//Undoes a bad step
+func undobadstep(Particles []*particle) {
+	for _, p := range Particles {
+		p.m1=p.previousm1
+		p.m2=p.previousm2
+	}
+	T-=Dt
 }

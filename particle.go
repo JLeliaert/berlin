@@ -25,6 +25,9 @@ type particle struct {
 	Ebar2  float64 // energy barrier to jump from E2 to E1
 	onemin bool    // boolean that states if there is one or 2 minima in the energy landscape
 
+	previousm1 float64
+	previousm2 float64
+
 }
 
 func (p *particle) V() float64 {
@@ -275,6 +278,8 @@ func (p *particle) relax() {
 //performs one timestep with stepsize Dt, using euler forward method
 func (p *particle) step() {
 
+	p.previousm1=p.m1
+	p.previousm2=p.m2
 	//step 1 of heun scheme
 	p.Update_minima()
 	p.Update_maximum()
@@ -296,6 +301,7 @@ func (p *particle) step() {
 	k2 := 0.
 
 	predicted := 0.
+	corrected := 0.
 	//update m1 and m2
 	if p.onemin == false {
 		if Temp != 0. {
@@ -305,7 +311,7 @@ func (p *particle) step() {
 			k2 = twotoone
 
 			p.m1 += Dt * (twotoone - onetotwo)
-			predicted = p.m1
+			predicted = Dt*(twotoone - onetotwo)
 			p.m2 -= Dt * (twotoone - onetotwo)
 
 		}
@@ -320,10 +326,11 @@ func (p *particle) step() {
 
 		p.m1 += 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
 		p.m2 -= 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
+		corrected=Dt * (twotoone - onetotwo)
 
 	}
-	if Adaptivestep && math.Abs(p.m1-predicted) > maxerr {
-		maxerr = math.Abs(p.m1 - predicted)
+	if Adaptivestep && math.Abs(corrected-predicted) > maxerr {
+		maxerr = math.Abs(corrected - predicted)
 	}
 	p.m1 = p.m1 / (p.m1 + p.m2)
 	p.m2 = p.m2 / (p.m1 + p.m2)

@@ -10,7 +10,8 @@ var (
 	Particles    []*particle                     // contains all particles
 	Entropy      bool                    = true  // calculate entropy in the free energy landscape?
 	Adaptivestep bool                    = false //  use adaptive step
-	maxerr       float64                 = 0.    // the maximum error made by the solver
+	maxerr       float64                 = 1.e-7    // the maximum error made by the solver
+	Errtol	     float64		=1.e-5		//the maximum allowed error
 )
 
 //initialised B_ext functions
