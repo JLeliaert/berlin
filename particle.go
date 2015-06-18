@@ -335,15 +335,25 @@ func CopyParticle(p *particle) *particle {
 	return &particle{r: p.r, msat: p.msat, ku1: p.ku1, u_anis: p.u_anis, m1: 1., weight: 1.}
 }
 
+//helper function that returns the weight for the axis distribution
+func axisweight(N int) float64 {
+
+	totalweight := 0.
+	for i := 0; i < N; i += 1 {
+		totalweight += math.Sin(math.Pi / 2. * float64(i) / float64(N-1))
+	}
+	return totalweight
+}
+
 // gives the ensemble random anisotropy axes (pi/2N is discritization in radians, N is number of u_anis directions)
 func Random_anis_axis(N int) {
 	var Newparticles []*particle
+	totalweight := axisweight(N)
 	for i := 0; i < N; i += 1 {
 		for j := range Particles {
 			newparticle := CopyParticle(Particles[j])
 			newparticle.u_anis = math.Pi / 2. * float64(i) / float64(N-1)
-			//TODO weights
-			newparticle.weight = Particles[j].weight * 1
+			newparticle.weight = Particles[j].weight * math.Sin(newparticle.u_anis) / totalweight
 			Newparticles = append(Newparticles, newparticle)
 		}
 	}
