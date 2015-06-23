@@ -62,7 +62,8 @@ func writeheader() {
 
 //Writes the time,average magnetisation and external field to table
 func write() {
-	if twrite >= outputinterval && outputinterval != 0 {
+
+	if (T==0. || T-twrite >= outputinterval*0.999999999) && outputinterval != 0 {
 		//calculate m_avg
 		avg := 0.
 		totalmoment := 0.
@@ -75,9 +76,8 @@ func write() {
 		string := fmt.Sprintf("%e\t%v\t%v\t%v\n", T, avg, B_ext(T), Dt)
 		_, err = outputFile.WriteString(string)
 		check(err)
-		twrite = 0.
+		twrite = T
 	}
-	twrite += Dt
 }
 
 func Printparticles() {

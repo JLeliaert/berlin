@@ -326,7 +326,7 @@ func (p *particle) step() {
 
 		p.m1 += 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
 		p.m2 -= 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
-		corrected=Dt * (twotoone - onetotwo)
+		corrected=Dt * 0.5 *(twotoone - onetotwo + k2 - k1)
 
 	}
 	if Adaptivestep && math.Abs(corrected-predicted) > maxerr {

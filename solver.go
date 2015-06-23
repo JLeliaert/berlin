@@ -6,16 +6,17 @@ import (
 
 //Runs the simulation for a certain time
 func Run(time float64) {
+
 	write()
 	for j := T; T < j+time; {
 		maxerr = 1.e-6
 		step(Particles)
 				if Adaptivestep {
 			if maxerr>Errtol{undobadstep(Particles)}
-			Dt = 0.95 * Dt * math.Pow(Errtol/maxerr, (1./2.))
+			Dt = 0.9 * Dt * math.Pow(Errtol/maxerr, (1./2.))
 		}
-		write()
 		T += Dt
+		write()
 	}
 
 }
