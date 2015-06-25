@@ -63,7 +63,7 @@ func writeheader() {
 //Writes the time,average magnetisation and external field to table
 func write() {
 
-	if (T==0. || T-twrite >= outputinterval*0.999999999) && outputinterval != 0 {
+	if (T == 0. || T-twrite >= outputinterval*0.999999999) && outputinterval != 0 {
 		//calculate m_avg
 		avg := 0.
 		totalmoment := 0.

@@ -9,9 +9,10 @@ var (
 	Temp         float64                 = 0.    // Temperature in K
 	Particles    []*particle                     // contains all particles
 	Entropy      bool                    = true  // calculate entropy in the free energy landscape?
-	Adaptivestep bool                    = false //  use adaptive step
-	maxerr       float64                 = 1.e-7    // the maximum error made by the solver
-	Errtol	     float64		=1.e-5		//the maximum allowed error
+	Adaptivestep bool                    = false // use adaptive step
+	Fastmax      bool                    = false // fast approximation for maximum
+	maxerr       float64                 = 1.e-7 // the maximum error made by the solver
+	Errtol       float64                 = 1.e-5 //the maximum allowed error
 )
 
 //initialised B_ext functions

@@ -27,7 +27,6 @@ type particle struct {
 
 	previousm1 float64
 	previousm2 float64
-
 }
 
 func (p *particle) V() float64 {
@@ -171,6 +170,13 @@ func (p *particle) Update_minima() {
 
 // looks for the position with maximum energy between the two minima (returns 0 if min1=min2)
 func (p *particle) Update_maximum() {
+	if Fastmax {
+
+		ref := p.F(((p.min1[0] + p.min2[0]) / 2.), math.Pi/2.)
+		p.Ebar1 = ref - p.E1
+		p.Ebar2 = ref - p.E2
+		return
+	}
 	if p.min1.Dist(p.min2) < 0.00001 {
 		p.Ebar1 = 0.
 		p.Ebar2 = 0.
@@ -278,8 +284,8 @@ func (p *particle) relax() {
 //performs one timestep with stepsize Dt, using euler forward method
 func (p *particle) step() {
 
-	p.previousm1=p.m1
-	p.previousm2=p.m2
+	p.previousm1 = p.m1
+	p.previousm2 = p.m2
 	//step 1 of heun scheme
 	p.Update_minima()
 	p.Update_maximum()
@@ -311,7 +317,7 @@ func (p *particle) step() {
 			k2 = twotoone
 
 			p.m1 += Dt * (twotoone - onetotwo)
-			predicted = Dt*(twotoone - onetotwo)
+			predicted = Dt * (twotoone - onetotwo)
 			p.m2 -= Dt * (twotoone - onetotwo)
 
 		}
@@ -326,7 +332,7 @@ func (p *particle) step() {
 
 		p.m1 += 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
 		p.m2 -= 0.5 * Dt * (twotoone - onetotwo - k2 + k1)
-		corrected=Dt * 0.5 *(twotoone - onetotwo + k2 - k1)
+		corrected = Dt * 0.5 * (twotoone - onetotwo + k2 - k1)
 
 	}
 	if Adaptivestep && math.Abs(corrected-predicted) > maxerr {
