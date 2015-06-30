@@ -56,7 +56,10 @@ func (p *particle) TS(theta float64) float64 {
 	if theta < 0.0001 || theta > math.Pi-0.0001 {
 		return -1.e-10
 	}
-	return Temp * kb * math.Log(1./2.*math.Sin(theta)*math.Sin(theta))
+	N := 1.
+	M := math.Cos(theta)
+	return Temp * kb * (N*math.Log(2.)-N/2.*(M*math.Log((1.+M)/(1.-M))-math.Log(1.-M*M)))
+	//return Temp * kb * math.Log(1./2.*math.Sin(theta)*math.Sin(theta))
 }
 
 // returns the total free energy as function of theta
