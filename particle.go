@@ -60,7 +60,8 @@ func (p *particle) TS(theta float64) float64 {
 	M := math.Cos(theta)
 	//return Temp * kb * (N*math.Log(2.)-N/2.*(M*math.Log((1.+M)/(1.-M))-math.Log(1.-M*M)))
 	//return Temp * kb * math.Log(1./2.*math.Sin(theta)*math.Sin(theta))
-	return Temp * kb * math.Log(1./(math.Gamma(0.+(1.+M)/2.)*math.Gamma(0.+(1.-M)/2.)))
+	//return Temp * kb * math.Log(1./(math.Gamma(0.+(1.+M)/2.)*math.Gamma(0.+(1.-M)/2.)))
+	return Temp * kb * math.Log(1./(math.Pi/math.Sin(math.Pi*(1.-M)/2.)))
 }
 
 // returns the total free energy as function of theta
