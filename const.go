@@ -18,8 +18,7 @@ const (
 func init() {
 
 	fmt.Println(`
-vinamax: a macrospin model to simulate magnetic nanoparticles
-Copyright (C) 2013  Jonathan Leliaert
+Copyright (C) 2015  Jonathan Leliaert
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
